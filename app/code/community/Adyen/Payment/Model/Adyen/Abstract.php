@@ -345,6 +345,15 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
         return $this->_processRequest($payment, null, "cancel_or_refund", $pspReference);
     }
 
+    public function sendCancelRequest(Varien_Object $payment, $pspReference) {
+        if (empty($pspReference)) {
+            $this->writeLog('oops empty pspReference');
+            return $this;
+        }
+        $this->writeLog("sendCancelRequest pspReference : $pspReference");
+        return $this->_processRequest($payment, null, "cancel", $pspReference);
+    }
+
     /**
      * Process the request here
      * @param Varien_Object $payment
@@ -395,6 +404,11 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                     break;
                 case "cancel_or_refund":
                     $response = $this->_service->cancelorrefund(array(
+                        'modificationRequest' => $requestData,
+                        'modificationResult' => $modificationResult));
+                    break;
+                case "cancel":
+                    $response = $this->_service->cancel(array(
                         'modificationRequest' => $requestData,
                         'modificationResult' => $modificationResult));
                     break;
@@ -471,6 +485,10 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
             case "cancel_or_refund":
                 $responseCode = $response->cancelOrRefundResult->response;
                 $pspReference = $response->cancelOrRefundResult->pspReference;
+                break;
+            case "cancel":
+                $responseCode = $response->cancelResult->response;
+                $pspReference = $response->cancelResult->pspReference;
                 break;
             case "capture":
                 $responseCode = $response->captureResult->response;
@@ -551,6 +569,9 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
                 break;
             case '[capture-received]':
             case '[refund-received]':
+            case '[cancel-received]':
+                $this->_addStatusHistory($payment, $responseCode, $pspReference, false, null, $originalPspReference);
+                break;
             case '[cancelOrRefund-received]':
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, false, null, $originalPspReference);
                 break;
