@@ -570,8 +570,6 @@ abstract class Adyen_Payment_Model_Adyen_Abstract extends Mage_Payment_Model_Met
             case '[capture-received]':
             case '[refund-received]':
             case '[cancel-received]':
-                $this->_addStatusHistory($payment, $responseCode, $pspReference, false, null, $originalPspReference);
-                break;
             case '[cancelOrRefund-received]':
                 $this->_addStatusHistory($payment, $responseCode, $pspReference, false, null, $originalPspReference);
                 break;
